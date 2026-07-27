@@ -109,17 +109,22 @@ public class FaceDbService {
      * Operate-type NET_FACERECONGNITIONDB_DELETE (see prior FaceRecognitionServiceImpl ~line 616).
      * PORT/VERIFY: confirm the exact delete-input fields (group + szUID) against the prior body.
      */
-    public boolean deleteFace(String groupId, String szUid) {
+    /** Xóa person theo szID (= personUid mình đặt lúc enroll). Giữ group, chỉ xóa người. */
+    public boolean deleteFaceByPersonId(String groupId, String personId) {
         NET_IN_OPERATE_FACERECONGNITIONDB in = new NET_IN_OPERATE_FACERECONGNITIONDB();
         in.emOperateType = EM_OPERATE_FACERECONGNITIONDB_TYPE.NET_FACERECONGNITIONDB_DELETE;
         in.bUsePersonInfoEx = 1;
         System.arraycopy(groupId.getBytes(), 0, in.stPersonInfoEx.szGroupID, 0, groupId.getBytes().length);
-        System.arraycopy(szUid.getBytes(), 0, in.stPersonInfoEx.szUID, 0, szUid.getBytes().length);
+        // KHÁC BẢN CŨ: set vào szID (khớp enroll set personId->szID), KHÔNG phải szUID
+        System.arraycopy(personId.getBytes(), 0, in.stPersonInfoEx.szUID, 0, personId.getBytes().length);
         NET_OUT_OPERATE_FACERECONGNITIONDB out = new NET_OUT_OPERATE_FACERECONGNITIONDB();
         in.write();
         boolean ok = server.getNetSdk()
                 .CLIENT_OperateFaceRecognitionDB(server.getLoginHandle(), in, out, 3000);
         in.read();
+        System.out.println("[FaceDbService] deleteFaceByPersonId group='" + groupId
+        + "' personId='" + personId + "' ok=" + ok
+        + " errCode=" + vn.attendance.lib.ToolKits.getErrorCode());
         return ok;
     }
 

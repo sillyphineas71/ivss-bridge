@@ -1,23 +1,21 @@
 server:
-  port: 8088   # bridge REST control API (NestJS calls this)
+  port: ${BRIDGE_PORT:8088}   # bridge REST control API (NestJS calls this)
 
 # ---- IVSS device (Dahua NetSDK, port 37777 — NOT http) ----
 device:
-  ip: 192.168.1.101
-  port: 37777
-  username: admin
-  password: o858899789          # set via env IVSS_PASSWORD, do not commit
-  # the Sample Database group the bridge enrolls SMRMPTS users into.
-  # Leave blank to auto-create a group named by 'default-group-name' on first sync. 
-  default-group-id: ""
-  default-group-name: SMRMPTS
-  # similarity threshold is configured on the IVSS web UI (Face Comparison arming),
-  # the bridge only consumes whatever the device decides is a match.
+  ip: ${IVSS_IP:127.0.0.1}
+  port: ${IVSS_PORT:37777}
+  username: ${IVSS_USERNAME:admin}
+  password: ${IVSS_PASSWORD:}          # BẮT BUỘC set qua env, KHÔNG hard-code
+  default-group-id: ${IVSS_GROUP_ID:1}
+  default-group-name: ${IVSS_GROUP_NAME:SMRMPTS}
 
-# ---- where the bridge POSTs recognition events (the NestJS capstone-be) ----
+# ---- where the bridge POSTs recognition events (NestJS capstone-be) ----
 nestjs:
-  webhook-url: http://localhost:3000/api/v1/internal/ivss/events
-  api-key: dev-secret-bridge           # shared secret, sent as X-Internal-Token; set via env NESTJS_BRIDGE_TOKEN
+  webhook-url: ${NESTJS_WEBHOOK_URL:http://localhost:3000/api/v1/internal/ivss/events}
+  vehicle-webhook-url: ${NESTJS_VEHICLE_WEBHOOK_URL:http://localhost:3000/api/v1/internal/ivss/vehicle-events}
+  occupancy-webhook-url: ${NESTJS_OCCUPANCY_WEBHOOK_URL:http://localhost:3000/api/v1/internal/ivss/occupancy-events}
+  api-key: ${NESTJS_BRIDGE_TOKEN:}     # BẮT BUỘC set qua env, KHÔNG hard-code
 
 spring:
   config:
@@ -26,4 +24,4 @@ spring:
 
 logging:
   level:
-    vn.attendance.bridge: INFO
+    vn.attendance.bridge: ${LOG_LEVEL:INFO}

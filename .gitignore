@@ -1,3 +1,35 @@
+# Build
 target/
 *.class
 *.jar
+!.mvn/wrapper/maven-wrapper.jar
+
+# Secret / config runtime
+.env
+application-local.yml
+application-prod.yml
+src/main/resources/application-secret.yml
+
+# Dahua SDK native libs (tải riêng — xem README, license Dahua)
+*.dll
+*.so
+*.dylib
+*.lib
+src/main/resources/win64/
+resources/win64/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Log
+*.log
+logs/

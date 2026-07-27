@@ -8,7 +8,7 @@ import vn.attendance.bridge.dto.CreateGroupRequest;
 import vn.attendance.bridge.dto.EnrollFaceRequest;
 import vn.attendance.bridge.sdk.FaceDbService;
 import vn.attendance.bridge.sdk.IvssConnection;
-
+import vn.attendance.bridge.dto.DeleteFaceRequest;
 import java.util.Map;
 
 /**
@@ -67,8 +67,17 @@ public class BridgeController {
     }
 
     @DeleteMapping("/faces")
-    public ApiResponse delete(@RequestParam String groupId, @RequestParam String szUid) {
-        return faceDb.deleteFace(groupId, szUid) ? ApiResponse.ok(null) : ApiResponse.fail("DELETE_FAILED");
+    public ApiResponse delete(@RequestBody DeleteFaceRequest req) {
+        if (req.getPersonUid() == null || req.getPersonUid().isEmpty()) {
+            return ApiResponse.fail("MISSING_FIELDS");
+        }
+        String group = (req.getGroupId() != null && !req.getGroupId().isEmpty())
+                ? req.getGroupId() : defaultGroupId;
+        if (group == null || group.isEmpty()) {
+            return ApiResponse.fail("NO_GROUP_CONFIGURED");
+        }
+        return faceDb.deleteFaceByPersonId(group, req.getPersonUid())
+                ? ApiResponse.ok(null) : ApiResponse.fail("DELETE_FAILED");
     }
 
     // GET /cameras -> PORT: wrap CLIENT_MatrixGetCameras (see prior DeviceServiceImpl.SynchronizeCamera)
