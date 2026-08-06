@@ -181,7 +181,7 @@ public class EventListener {
             FaceEventDto e = new FaceEventDto();
             e.setType("face_recognition");
             e.setChannelId(info.nChannelID);
-            e.setUtc(toIso(info.UTC));
+            e.setUtc(toIsoWithOffset(info.UTC));
             e.setPersonUid(personUid);
             e.setImageBase64(extractImage(info, pBuffer));
 
@@ -209,7 +209,7 @@ public class EventListener {
 
                 VehicleEventDto e = new VehicleEventDto();
                 e.setChannelId(channelId);
-                e.setUtc(toIso(utc));
+                e.setUtc(toIsoWithOffset(utc));
                 e.setEventAction(direction);
 
                 // stuTrafficCar có thể null nếu JNA không tự init struct con → guard
@@ -242,7 +242,7 @@ public class EventListener {
                 ToolKits.GetPointerData(pAlarmInfo, info);
 
                 int channelId = info.nChannelID;
-                String utcIso = toIso(info.UTC);   // UTC kiểu NetSDKLib.NET_TIME_EX (inner) -> khớp overload có sẵn
+                String utcIso = toIsoWithOffset(info.UTC);   // UTC kiểu NetSDKLib.NET_TIME_EX (inner) -> khớp overload có sẵn
 
                 // --- BIỂN: thử nhiều nguồn ---
                 String plate = null;
@@ -297,6 +297,31 @@ public class EventListener {
             }
         }
 
+        private static String toIsoWithOffset(NetSDKLib.NET_TIME_EX t) {
+            if (t == null) {
+                return null;
+            }
+            try {
+                return LocalDateTime.of(t.dwYear, t.dwMonth, t.dwDay, t.dwHour, t.dwMinute, t.dwSecond)
+                        .atOffset(java.time.ZoneOffset.of("+07:00")).toString();
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+
+        private static String toIsoWithOffset(NET_TIME_EX t) {
+            if (t == null) {
+                return null;
+            }
+            try {
+                return LocalDateTime.of(t.dwYear, t.dwMonth, t.dwDay, t.dwHour, t.dwMinute, t.dwSecond)
+                        .atOffset(java.time.ZoneOffset.of("+07:00")).toString();
+                // → "2026-07-29T14:49:20+07:00"
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+
         private static String toIso(NET_TIME_EX t) {
             if (t == null) {
                 return null;
@@ -332,7 +357,7 @@ public class EventListener {
 
                 OccupancyEventDto e = new OccupancyEventDto();
                 e.setChannelId(info.nChannelID);
-                e.setUtc(toIso(info.UTC));
+                e.setUtc(toIsoWithOffset(info.UTC));
                 e.setNumber(info.nNumber);
                 e.setEnteredNumber(info.nEnteredNumber);
                 e.setExitedNumber(info.nExitedNumber);
@@ -351,7 +376,7 @@ public class EventListener {
             FaceEventDto e = new FaceEventDto();
             e.setType("face_detect");
             e.setChannelId(info.nChannelID);
-            e.setUtc(toIso(info.UTC));
+            e.setUtc(toIsoWithOffset(info.UTC));
             // detection has no identity
             forwarder.forwardAsync(e);
         }
