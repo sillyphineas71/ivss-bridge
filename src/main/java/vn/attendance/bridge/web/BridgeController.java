@@ -10,6 +10,7 @@ import vn.attendance.bridge.sdk.FaceDbService;
 import vn.attendance.bridge.sdk.IvssConnection;
 import vn.attendance.bridge.dto.DeleteFaceRequest;
 import java.util.Map;
+import vn.attendance.bridge.sdk.SnapshotService;
 
 /**
  * Control API the NestJS capstone-be calls. Thin: validates, delegates to SDK services,
@@ -27,6 +28,7 @@ public class BridgeController {
 
     @Autowired private IvssConnection connection;
     @Autowired private FaceDbService faceDb;
+    @Autowired private SnapshotService snapshotService;
 
     @GetMapping("/status")
     public ApiResponse status() {
@@ -41,6 +43,14 @@ public class BridgeController {
                 (String) body.get("username"),
                 (String) body.get("password"));
         return ok ? ApiResponse.ok(null) : ApiResponse.fail("LOGIN_FAILED");
+    }
+    
+    @PostMapping("/snapshot")
+    public ApiResponse snapshot(@RequestParam int channelId) {
+        String base64 = snapshotService.snapPicture(channelId);
+        return base64 != null
+            ? ApiResponse.ok(base64)
+            : ApiResponse.fail("Snapshot failed or timeout");
     }
 
     @PostMapping("/groups")

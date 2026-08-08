@@ -130,7 +130,7 @@ public class EventListener {
 
             // --- ANPR camera IPC (Video Metadata "Motor Vehicle") -> TRAFFICJUNCTION 0x17 ---
             if (dwAlarmType == NetSDKLib.EVENT_IVS_TRAFFICJUNCTION) {
-                handleTrafficJunction(pAlarmInfo);
+                handleTrafficJunction(pAlarmInfo, pBuffer);
                 return 0;
             }
             if (dwAlarmType == NetSDKLib.EVENT_IVS_CAR_DRIVING_IN) {
@@ -235,7 +235,7 @@ public class EventListener {
             }
         }
 
-        private void handleTrafficJunction(Pointer pAlarmInfo) {
+        private void handleTrafficJunction(Pointer pAlarmInfo, Pointer pBuffer) {
             try {
                 NetSDKLib.DEV_EVENT_TRAFFICJUNCTION_INFO info
                         = new NetSDKLib.DEV_EVENT_TRAFFICJUNCTION_INFO();
@@ -275,6 +275,7 @@ public class EventListener {
                 if (plate != null) {
                     e.setPlateNumber(plate);
                 }
+                e.setImageBase64(extractVehicleImage(info, pBuffer));
                 if (info.stTrafficCar != null) {
                     e.setPlateColor(trim(info.stTrafficCar.szPlateColor));
                     e.setVehicleColor(trim(info.stTrafficCar.szVehicleColor));
@@ -304,6 +305,22 @@ public class EventListener {
             try {
                 return LocalDateTime.of(t.dwYear, t.dwMonth, t.dwDay, t.dwHour, t.dwMinute, t.dwSecond)
                         .atOffset(java.time.ZoneOffset.of("+07:00")).toString();
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+
+        private String extractVehicleImage(NetSDKLib.DEV_EVENT_TRAFFICJUNCTION_INFO info, Pointer pBuffer) {
+            try {
+                NetSDKLib.NET_PIC_INFO pic = info.stuObject.stPicInfo;
+                if (pic == null || pic.dwFileLenth <= 0 || pBuffer == null) {
+                    return null;
+                }
+                byte[] img = pBuffer.getByteArray(pic.dwOffSet, pic.dwFileLenth);
+                if (img.length <= 0) {
+                    return null;
+                }
+                return "data:image/jpeg;base64," + Base64.getEncoder().encodeToString(img);
             } catch (Exception ex) {
                 return null;
             }

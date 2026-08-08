@@ -33,6 +33,7 @@ public class IvssConnection {
     @Autowired private EventListener eventListener;
     @Autowired private DisconnectCallback disconnectCallback;
     @Autowired private HaveReconnectCallback haveReconnectCallback;
+    @Autowired private SnapshotService snapshotService;
 
     @PostConstruct
     public void start() {
@@ -49,6 +50,7 @@ public class IvssConnection {
     private void initSdk() {
         server.getNetSdk().CLIENT_Init(disconnectCallback, null);
         server.getNetSdk().CLIENT_SetAutoReconnect(haveReconnectCallback, null);
+        snapshotService.registerCallback();
     }
 
     /** Login (or re-login). Returns true on success. */

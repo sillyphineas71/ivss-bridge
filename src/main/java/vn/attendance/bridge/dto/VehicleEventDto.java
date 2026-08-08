@@ -11,6 +11,7 @@ import lombok.Data;
  */
 @Data
 public class VehicleEventDto {
+    private String imageBase64;
     private String plateNumber;    // RAW từ camera (CHƯA normalize) — BE normalize
     private int    channelId;      // IVSS channel
     private String utc;            // ISO local time
@@ -18,4 +19,6 @@ public class VehicleEventDto {
     private String plateColor;     // optional
     private String vehicleColor;   // optional
     private String vehicleType;    // optional (để trống — struct không có field rõ)
+    public String getImageBase64() { return imageBase64; }
+    public void setImageBase64(String imageBase64) { this.imageBase64 = imageBase64; }
 }

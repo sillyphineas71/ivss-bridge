@@ -115,7 +115,6 @@ public class FaceDbService {
         in.emOperateType = EM_OPERATE_FACERECONGNITIONDB_TYPE.NET_FACERECONGNITIONDB_DELETE;
         in.bUsePersonInfoEx = 1;
         System.arraycopy(groupId.getBytes(), 0, in.stPersonInfoEx.szGroupID, 0, groupId.getBytes().length);
-        // KHÁC BẢN CŨ: set vào szID (khớp enroll set personId->szID), KHÔNG phải szUID
         System.arraycopy(personId.getBytes(), 0, in.stPersonInfoEx.szUID, 0, personId.getBytes().length);
         NET_OUT_OPERATE_FACERECONGNITIONDB out = new NET_OUT_OPERATE_FACERECONGNITIONDB();
         in.write();
