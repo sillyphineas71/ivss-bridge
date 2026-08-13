@@ -185,6 +185,11 @@ public class EventListener {
             e.setPersonUid(personUid);
             e.setImageBase64(extractImage(info, pBuffer));
 
+            int similarity = cand.bySimilarity & 0xFF;
+            if (similarity >= 1 && similarity <= 100) {
+                e.setSimilarity((double) similarity / 100.0);
+            }
+            
             forwarder.forwardAsync(e);
         }
 
