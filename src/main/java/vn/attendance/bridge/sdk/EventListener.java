@@ -165,9 +165,26 @@ public class EventListener {
             NetSDKLib.DEV_EVENT_FACERECOGNITION_INFO info = new NetSDKLib.DEV_EVENT_FACERECOGNITION_INFO();
             ToolKits.GetPointerData(pAlarmInfo, info);
 
-            // Stranger / không khớp ai trong FaceDB → nCandidateNum = 0 → KHÔNG forward.
+            // Stranger / không khớp ai trong FaceDB → nCandidateNum = 0.
+            // [FIX 2026-08-17] TRƯỚC ĐÂY return sớm ở đây khiến người lạ hoàn toàn
+            // (chưa từng enroll ở bất kỳ đâu) KHÔNG BAO GIỜ có request nào được gửi
+            // lên BE — đây là nguyên nhân gốc "người lạ hoàn toàn không có log gì".
+            // Giờ VẪN forward, giữ NGUYÊN type="face_recognition" (KHÔNG đổi thành
+            // face_detect — face_detect bắn cho MỌI khuôn mặt kể cả người quen, vì
+            // attach() subscribe EVENT_IVS_ALL nên SDK bắn CẢ 2 event độc lập cho
+            // CÙNG 1 lần phát hiện; dùng face_detect ở đây sẽ tạo request trùng cho
+            // chính người quen). personUid để trống (KHÔNG có candidate nào để lấy
+            // UID) — channelId/utc/imageBase64 lấy trực tiếp từ `info` (KHÔNG phụ
+            // thuộc mảng stuCandidates) nên vẫn đọc an toàn dù nCandidateNum=0.
             // (info.szUID top-level là UID ảnh-snap, RỖNG khi match → đừng dùng nó.)
             if (info.nCandidateNum <= 0) {
+                FaceEventDto stranger = new FaceEventDto();
+                stranger.setType("face_recognition");
+                stranger.setChannelId(info.nChannelID);
+                stranger.setUtc(toIsoWithOffset(info.UTC));
+                stranger.setImageBase64(extractImage(info, pBuffer));
+                // personUid KHÔNG set (giữ null) — 0 candidate, không có UID để gán.
+                forwarder.forwardAsync(stranger);
                 return;
             }
 
